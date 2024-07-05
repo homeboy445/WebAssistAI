@@ -1,0 +1,136 @@
+.main-parent {
+    width: 400px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    font-size: 1rem;
+}
+.search-bar {
+    font-size: 1.5rem;
+    width: 95%;
+}
+button.search-submit {
+    width: 30%;
+    font-size: 1.3rem;
+    align-self: flex-end;
+    margin-right: 5%;
+    margin-top: 2%;
+}
+/* <div class="main-loader-section">
+<h2 id="loaderText">Loading...</h2>
+<div id="loaderBar"></div>
+</div> */
+.main-loader-section {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    z-index: 9999;
+}
+
+#loaderText {
+    font-size: 1.3rem;
+    margin: 1%;
+    margin-bottom: 5%;
+}
+
+#loaderBar {
+    width: 90%;
+    height: 5px;
+    border-radius: 10px;
+    margin-top: 10px;
+    border: 1px solid black;
+    padding: 1%;
+}
+
+#loader {
+    transition: 0.3s ease;
+    width: 10%;
+    background: cyan;
+    border-radius: 10px;
+    height: 100%;
+}
+
+.main-ai-response {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    z-index: 9999;
+}
+
+#additionalInfo {
+    font-size: 1rem;
+    margin: 1%;
+}
+
+#operationStatus {
+    font-weight: 400;
+    font-size: 1rem;
+}
+
+.close-dialog-btn {
+  appearance: none;
+  background-color: #2ea44f;
+  border: 1px solid rgba(27, 31, 35, .15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, .1) 0 1px 0;
+  box-sizing: border-box;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system,system-ui,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 15px;
+  padding: 6px 16px;
+  position: relative;
+  text-align: center;
+  text-decoration: none;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  margin-bottom: 2%;
+}
+
+.close-dialog-btn:focus:not(:focus-visible):not(.focus-visible) {
+  box-shadow: none;
+  outline: none;
+}
+
+.close-dialog-btn:hover {
+  background-color: #2c974b;
+}
+
+.close-dialog-btn:focus {
+  box-shadow: rgba(46, 164, 79, .4) 0 0 0 3px;
+  outline: none;
+}
+
+.close-dialog-btn:disabled {
+  background-color: #94d3a2;
+  border-color: rgba(27, 31, 35, .1);
+  color: rgba(255, 255, 255, .8);
+  cursor: default;
+}
+
+.close-dialog-btn:active {
+  background-color: #298e46;
+  box-shadow: rgba(20, 70, 32, .2) 0 1px 0 inset;
+}

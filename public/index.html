@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebAssistAI</title>
+    <link href="./popup.css" rel="stylesheet"/>
+</head>
+<body style="overflow: scroll">
+    <div class="main-parent">
+        <h2>Hi, I'm your Web Assistant! What would you like to do on the page ?</h2>
+        <input type="text" placeholder="enter query/task" class="search-bar" />
+        <button class="search-submit">Go</button>
+    </div>
+    <div class="main-ai-response">
+        <h1>AI's response</h1>
+        <p id="additionalInfo">Additional info</p>
+        <h2 id="operationStatus">Operation success!</h2>
+        <button class="close-dialog-btn">OK</button>
+    </div>
+    <div class="main-loader-section">
+        <h2 id="loaderText">Loading...</h2>
+        <div id="loaderBar">
+            <div id="loader"></div>
+        </div>
+    </div>
+    <script src="./popup.js"></script>
+</body>
+</html>

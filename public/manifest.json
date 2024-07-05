@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "web-assist-ai",
+  "version": "1.0",
+  "description": "A Chrome extension built with TypeScript.",
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; style-src 'self';"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["contentScript.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "permissions": ["storage", "activeTab", "scripting"]
+}
