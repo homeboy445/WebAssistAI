@@ -1,5 +1,6 @@
 // apiUtils.ts (New file to encapsulate API interactions)
 
+import { AITaskResponse, GenericObject, TaskType } from "../types/types";
 import domUtils from "./domUtils";
 import $ from "jquery";
 
@@ -54,7 +55,8 @@ function performOperations(element: HTMLElement | null, opType: string): boolean
   }
   switch (opType) {
     case "Click": {
-      return element?.click(), true;
+      element?.click();
+      return true;
     }
     case "scrollIntoView": {
       $(element).css({ border: "5px solid red", "padding": "2px" });
@@ -82,7 +84,7 @@ export function parseGenAICodeResponse(
   return codeString.replaceAll("```", "").replaceAll(type, " ");
 }
 
-export async function performTaskBasedOnPrompt(prompt: string): Promise<any> {
+export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskResponse> {
   const result = await askAI(prompt);
   console.log("Result received:", result);
 
@@ -93,10 +95,9 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<any> {
   for (const { fn, input, operation } of tasks) {
     functionType = domUtils.getFunctionType(fn);
     if (!functionType) {
-      return { operationSuccess: false, message: "Invalid operation!" };
+      return { operationSuccess: false, result: "Invalid operation!" };
     }
     const foundElements = await (domUtils as any)[fn]?.(input);
-
     switch (fn) {
       case "collectSiteDataAndProcessContent": {
         if (foundElements.result) {
@@ -106,9 +107,10 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<any> {
       default: {
         if (operation) {
           if (Array.isArray(foundElements)) {
-            foundElements?.reduce((element: any) => {
-              operationSuccess = performOperations(element, operation) && operationSuccess;
-            }, operationSuccess);
+            console.log("I am here! ", foundElements);
+            operationSuccess = foundElements?.reduce((operationSuccess: boolean, element: any) => {
+              return performOperations(element, operation) && operationSuccess;
+            }, true);
           } else {
             operationSuccess = performOperations(foundElements, operation);
           }
@@ -116,8 +118,6 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<any> {
       }
     }
   }
-
+  console.log("@@ success: ", operationSuccess);
   return { ...parsedResponse, operationSuccess, functionType };
 }
-
-// (Existing domUtils.ts file with domUtils object)

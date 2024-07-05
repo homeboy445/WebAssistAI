@@ -1,5 +1,6 @@
 // This file will control the popup.html file which is responsible for loading extension UI!
 import $ from "jquery";
+import { AITaskResponse, GenericObject, TaskType } from "./types/types";
 
 const establishCommunication = async () => {
   let [tab] = await chrome.tabs.query({active: true, currentWindow: true});
@@ -58,7 +59,7 @@ const loader = (() => {
     loaderText.html(loaderTextList[(idx % loaderTextList.length)]);
   }
   const handler = {
-    beginProcedure: (promiseToAwait: Promise<any>, timer = 100) => {
+    run: (promiseToAwait: Promise<any>, timer = 100) => {
       return new Promise((resolve) => {
         loaderParent.css({ display: "flex" });
         let width = 10;
@@ -101,46 +102,57 @@ const AIResponseDialogBox = (() => {
     dialogBox.css({ display: "none" });
   });
   return {
-    show({ message, operationStatus }: { message: string; operationStatus: boolean }) {
-      infoBox.html(message || "AI's got nothing to say!😅");
-      operationStatusSection.html("The operations's a " + (operationStatus ? "success🥳" : "failure🥲"));
+    show({ result, additionalInfo, operationSuccess, functionType }: AITaskResponse) {
+      let message = "AI's got nothing to say!😅";
+      let operationMessage = "The operation was a failure!🥲";
+      if (functionType === TaskType.DOM_OPERATION) {
+        message = additionalInfo || message;
+        operationMessage = "The requested DOM operation was a " + (operationSuccess ? "success🥳" : "failure🥲");
+      } else if (functionType === TaskType.INFO_RETRIEVAL) {
+        message = result as string;
+        // TODO: Use additionalInfo here as well!
+        operationMessage = "The requested info retrieval operation was a " + (operationSuccess ? "success🥳" : "failure🥲");
+      }
+      if (result && typeof result === "object" && result.isError) {
+        message = "Something went wrong! Please try again! 😞"
+      }
+      infoBox.html(message);
+      operationStatusSection.html(operationMessage);
       dialogBox.css({ display: "flex" });
     },
   };
 })();
 
-const run = async () => {
+const initialize = async () => {
   const element = document.querySelector(".search-submit");
   element?.addEventListener("click", async () => {
     const searchBar = document.querySelector(".search-bar") as HTMLInputElement;
     if (searchBar?.value) {
       const communicator = await establishCommunication();
       globalPromiseManager.initialize();
-      communicator.sendMessage({ type: 'WEB_TASK', task: searchBar.value.trim() }, (response) => {
-        console.log("## response: ", response);
+      communicator.sendMessage({ type: 'WEB_TASK', task: searchBar.value.trim() });
+      const responsePromise = globalPromiseManager.getPromise();
+      const timer = setTimeout(() => {
+        globalPromiseManager.resolver({ operationSuccess: false, result: "The operation timed out!😅" });
+      }, 60000);
+      responsePromise.then((message: any) => {
+        clearTimeout(timer);
+        console.log("running the dialog box: ", message);
+        AIResponseDialogBox.show(message.data);
       });
+      await loader.run(responsePromise);
       searchBar.value = "";
     }
-    const responsePromise = globalPromiseManager.getPromise();
-    responsePromise.then((message: any) => {
-      console.log("running the dialog box: ", message);
-      AIResponseDialogBox.show({ message: message.data?.additionalInfo, operationStatus: message.data?.operationSuccess || false });
-    });
-    loader.beginProcedure(responsePromise);
   });
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (message.type === "WEB_TASK_RESPONSE") {
-      console.log('Received message in popup:', message.data);
       globalPromiseManager.resolver(message);
     }
-    console.log("popup: ", message);
   });
 }
 
-
 if (document.readyState !== 'loading') {
-  run();
+  initialize();
 } else {
-  document.addEventListener('DOMContentLoaded', run);
+  document.addEventListener('DOMContentLoaded', initialize);
 }
-

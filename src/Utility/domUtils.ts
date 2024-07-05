@@ -1,3 +1,4 @@
+import { TaskType } from "../types/types";
 import { askAI, parseGenAICodeResponse } from "./aiQueryHandler";
 import colorMap from "./colorMap";
 import { io } from "socket.io-client";
@@ -99,11 +100,6 @@ const RESTRICTED_ELEMENTS: { [key: string]: number } = {
   NOSCRIPT: 1,
   STYLE: 1,
   IFRAME: 1,
-};
-
-enum TaskType {
-  DOM_OPERATION = "DOM_OPERATION",
-  INFO_RETRIEVAL = "INFO_RETRIEVAL",
 };
 
 class DomUtils {
