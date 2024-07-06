@@ -2,6 +2,7 @@ import { TaskType } from "../types/types";
 import { askAI, parseGenAICodeResponse } from "./aiQueryHandler";
 import colorMap from "./colorMap";
 import { io } from "socket.io-client";
+import { DialogBoxConfig, DialogBoxHandler } from "./dialogBoxHandler";
 
 const socket = io("http://localhost:3000");
 
@@ -103,7 +104,6 @@ const RESTRICTED_ELEMENTS: { [key: string]: number } = {
 };
 
 class DomUtils {
-
   functionTypeStore: Record<string, TaskType> = {
     findAndClickOnElementBasedOnText: TaskType.DOM_OPERATION,
     findAndClickElementBasedOnColor: TaskType.DOM_OPERATION,
@@ -114,9 +114,8 @@ class DomUtils {
     goBackwardInHistory: TaskType.DOM_OPERATION,
     scrollToBottom: TaskType.DOM_OPERATION,
     scrollToTop: TaskType.DOM_OPERATION,
-    getAllTextContentWithTags: TaskType.INFO_RETRIEVAL,
     collectSiteDataAndProcessContent: TaskType.INFO_RETRIEVAL,
-    findElementOnThePageGloballyByText: TaskType.INFO_RETRIEVAL
+    findElementOnThePageGloballyByText: TaskType.DOM_OPERATION,
   };
 
   getFunctionType(functionName: string): TaskType {
@@ -182,8 +181,12 @@ class DomUtils {
     if (!url) {
       return [];
     }
-    return this.getVisibleElements(function (element: Element) {
-      if ((element as HTMLAnchorElement).href === url) {
+    return this.getVisibleElements(function (element: HTMLElement) {
+      if (
+        element &&
+        (element as HTMLAnchorElement).href &&
+        (element as HTMLAnchorElement).href.includes(url)
+      ) {
         return true;
       }
       return false;
@@ -220,29 +223,42 @@ class DomUtils {
       if (node.nodeType === Node.TEXT_NODE) {
         text = node.nodeValue?.trim() || "";
         if (text) {
-          return `${" ".repeat(depth * 2)}${text}\n`;
+          let tagOpen = `<${(
+            node.parentElement as Element
+          ).tagName.toLowerCase()}>\n`;
+          let tagClose = `</${(
+            node.parentElement as Element
+          ).tagName.toLowerCase()}>\n`;
+          return `\n${tagOpen}${text}${tagClose}\n`;
         }
       } else if (
         node.nodeType === Node.ELEMENT_NODE &&
-        !RESTRICTED_ELEMENTS[(node as Element).tagName]
+        !{
+          ...RESTRICTED_ELEMENTS,
+          A: 1,
+          FORM: 1,
+          INPUT: 1,
+          LINK: 1,
+          TEXTAREA: 1,
+          LABEL: 1,
+          TABLE: 1,
+          TH: 1,
+          TR: 1,
+          TD: 1,
+          CITE: 1,
+          CODE: 1,
+          BUTTON: 1
+        }[(node as Element).tagName]
       ) {
         let tagContent = "";
         Array.from((node as HTMLElement).childNodes).forEach((child: Node) => {
           tagContent += getTextContentWithTags(child, depth + 1);
         });
-        if (tagContent.trim()) {
-          let tagOpen = `${" ".repeat(depth * 2)}<${(
-            node as Element
-          ).tagName.toLowerCase()}>\n`;
-          let tagClose = `${" ".repeat(depth * 2)}</${(
-            node as Element
-          ).tagName.toLowerCase()}>\n`;
-          text = tagOpen + tagContent + tagClose;
-        }
+        text = tagContent;
       }
       return text;
     }
-    return getTextContentWithTags(document.body);
+    return `<body>${getTextContentWithTags(document.body)}</body>`;
   }
 
   async collectSiteDataAndProcessContent() {
@@ -262,14 +278,14 @@ class DomUtils {
         isEnd: idx + 500 > pageDataList.length,
       };
       socket.emit("pageSummarisation.send", data);
-      finalResponse = await new Promise(resolve => {
+      finalResponse = await new Promise((resolve) => {
         const timer = setTimeout(() => {
           resolve("Not found!");
-        }, 30000);
+        }, 60000 * 5);
         promiseResolvedCallback = (response) => {
           clearTimeout(timer);
           resolve(response);
-        }
+        };
       });
     }
     return finalResponse;
@@ -307,7 +323,9 @@ class DomUtils {
     return visibleElements;
   }
 
-  async findElementOnThePageGloballyByText(input: string): Promise<HTMLElement | null> {
+  async findElementOnThePageGloballyByText(
+    input: string
+  ): Promise<HTMLElement | null> {
     const treeWalker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT
@@ -324,18 +342,50 @@ class DomUtils {
       }
     }
     let iterator = 0;
+    const limit = 50;
     do {
-      const currentTextListBatch = textList.slice(iterator, iterator + 100);
-      iterator += 100;
-      const result = await askAI(input, "findElement", { textArray: currentTextListBatch.map(x => x.textContent?.trim()) });
+      const currentTextListBatch = textList.slice(iterator, iterator + limit);
+      iterator += limit;
+      const result = await askAI(input, "findElement", {
+        textArray: currentTextListBatch.map((x) => x.textContent?.trim()),
+      });
       try {
-        const parsedResult = JSON.parse(parseGenAICodeResponse(result, 'json'));
-        if (parsedResult && !isNaN(+parsedResult?.idx) && parsedResult?.idx !== -1) {
-          return currentTextListBatch[parsedResult.idx - 1]?.parentElement;
+        const parsedResult = JSON.parse(parseGenAICodeResponse(result, "json"));
+        if (
+          parsedResult &&
+          !isNaN(+parsedResult?.idx) &&
+          parsedResult?.idx !== -1
+        ) {
+          const eleText =
+            currentTextListBatch[parsedResult.idx - 1]?.textContent?.trim?.() ||
+            "";
+          if (
+            eleText &&
+            eleText.toLowerCase().indexOf(input.toLowerCase()) > -1
+          ) {
+            return currentTextListBatch[parsedResult.idx - 1]
+              ?.parentElement as HTMLElement;
+          } else {
+            for (const text of currentTextListBatch) {
+              const mainTxt = (text.textContent || "").trim();
+              if (mainTxt.toLowerCase().indexOf(input.toLowerCase()) > -1) {
+                return text.parentElement as HTMLElement;
+              }
+            }
+          }
         }
       } catch (e) {}
     } while (iterator < textList.length);
     return null;
+  }
+
+  createDialogBox(data: {
+    title: string;
+    content: string;
+    onAcceptCB?: () => void;
+  }) {
+    const dialogBox = new DialogBoxHandler();
+    dialogBox.spawn(data, { width: "50%", height: "100vh" });
   }
 }
 

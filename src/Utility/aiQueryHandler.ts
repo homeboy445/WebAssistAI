@@ -49,7 +49,6 @@ export async function askAI(
 }
 
 function performOperations(element: HTMLElement | null, opType: string): boolean {
-  console.log("## operating on: ", element);
   if (!element) {
     return false;
   }
@@ -101,7 +100,7 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
     switch (fn) {
       case "collectSiteDataAndProcessContent": {
         if (foundElements.result) {
-          return { ...JSON.parse(parseGenAICodeResponse(foundElements.result, "json")), operationSuccess: true };
+          return { ...JSON.parse(parseGenAICodeResponse(foundElements.result, "json")), operationSuccess: true, functionType: TaskType.INFO_RETRIEVAL };
         }
       }
       default: {
@@ -114,10 +113,10 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
           } else {
             operationSuccess = performOperations(foundElements, operation);
           }
+          operationSuccess = operation.indexOf("scroll") > -1;
         }
       }
     }
   }
-  console.log("@@ success: ", operationSuccess);
   return { ...parsedResponse, operationSuccess, functionType };
 }

@@ -11,6 +11,7 @@
   "license": "ISC",
   "devDependencies": {
     "@types/chrome": "^0.0.268",
+    "@types/dompurify": "^3.0.5",
     "@types/jquery": "^3.5.30",
     "@types/node": "^20.14.8",
     "copy-webpack-plugin": "^12.0.2",
@@ -21,7 +22,9 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "dompurify": "^3.1.6",
     "jquery": "^3.7.1",
+    "marked": "^13.0.2",
     "socket.io-client": "^4.7.5"
   }
 }

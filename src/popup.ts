@@ -109,7 +109,7 @@ const AIResponseDialogBox = (() => {
         message = additionalInfo || message;
         operationMessage = "The requested DOM operation was a " + (operationSuccess ? "success🥳" : "failure🥲");
       } else if (functionType === TaskType.INFO_RETRIEVAL) {
-        message = result as string;
+        message = "The requested info is here!";
         // TODO: Use additionalInfo here as well!
         operationMessage = "The requested info retrieval operation was a " + (operationSuccess ? "success🥳" : "failure🥲");
       }
@@ -134,7 +134,7 @@ const initialize = async () => {
       const responsePromise = globalPromiseManager.getPromise();
       const timer = setTimeout(() => {
         globalPromiseManager.resolver({ operationSuccess: false, result: "The operation timed out!😅" });
-      }, 60000);
+      }, 60000 * 5);
       responsePromise.then((message: any) => {
         clearTimeout(timer);
         console.log("running the dialog box: ", message);
@@ -144,7 +144,7 @@ const initialize = async () => {
       searchBar.value = "";
     }
   });
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener((message) => {
     if (message.type === "WEB_TASK_RESPONSE") {
       globalPromiseManager.resolver(message);
     }
