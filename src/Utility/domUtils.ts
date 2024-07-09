@@ -2,40 +2,8 @@ import { TaskType } from "../types/types";
 import { askAI, parseGenAICodeResponse } from "./aiQueryHandler";
 import colorMap from "./colorMap";
 import { io } from "socket.io-client";
-import { DialogBoxConfig, DialogBoxHandler } from "./dialogBoxHandler";
-
-const socket = io("http://localhost:3000");
-
-function getVisibleElements(
-  validatorCallback: (element: HTMLElement) => boolean = () => true
-): HTMLElement[] {
-  const visibleElements: HTMLElement[] = [];
-  const allElements = Array.from(
-    document.body.querySelectorAll("*")
-  ) as Array<HTMLElement>;
-  const restrictedElements: { [key: string]: number } = {
-    SCRIPT: 1,
-    NOSCRIPT: 1,
-    STYLE: 1,
-  };
-
-  allElements.forEach((element: HTMLElement) => {
-    const rect = element.getBoundingClientRect();
-    if (
-      validatorCallback(element) &&
-      !restrictedElements[element.tagName] &&
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <=
-        (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    ) {
-      visibleElements.push(element);
-    }
-  });
-
-  return visibleElements;
-}
+import { DialogBoxHandler } from "./dialogBoxHandler";
+import { getBaseURL } from "../consts/Urls";
 
 function hexToRgb(hex: string): number[] {
   hex = hex.replace(/^#/, "");
@@ -262,6 +230,7 @@ class DomUtils {
   }
 
   async collectSiteDataAndProcessContent() {
+    const socket = io(getBaseURL());
     const htmlStructureString = this.getAllTextContentWithTags();
     const pageDataList = htmlStructureString.split("\n");
     let finalResponse = "";
@@ -357,13 +326,13 @@ class DomUtils {
           parsedResult?.idx !== -1
         ) {
           const eleText =
-            currentTextListBatch[parsedResult.idx - 1]?.textContent?.trim?.() ||
+            currentTextListBatch[parsedResult.idx]?.textContent?.trim?.() ||
             "";
           if (
             eleText &&
             eleText.toLowerCase().indexOf(input.toLowerCase()) > -1
           ) {
-            return currentTextListBatch[parsedResult.idx - 1]
+            return currentTextListBatch[parsedResult.idx]
               ?.parentElement as HTMLElement;
           } else {
             for (const text of currentTextListBatch) {

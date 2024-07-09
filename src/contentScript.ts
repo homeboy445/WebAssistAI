@@ -37,9 +37,7 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     let result;
     try {
       result = await performTaskBasedOnPrompt(request.task);
-      console.log("@@ result: ", result);
       if (result.functionType === TaskType.INFO_RETRIEVAL) {
-        debugger;
         domUtils.createDialogBox({ title: "Info you requested", content: await parseMarkdown(objectToHTML(result.result) + "\nAdditionally, " + objectToHTML(result.additionalInfo)) });
       }
     } catch (e) {

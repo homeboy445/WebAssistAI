@@ -1,11 +1,12 @@
 .main-parent {
-    width: 400px;
-    height: 200px;
+    width: 450px;
+    height: 250px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
     font-size: 1rem;
+    overflow-x: scroll;
 }
 .search-bar {
     font-size: 1.5rem;

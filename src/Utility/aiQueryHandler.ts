@@ -1,5 +1,6 @@
 // apiUtils.ts (New file to encapsulate API interactions)
 
+import { getBaseURL } from "../consts/Urls";
 import { AITaskResponse, GenericObject, TaskType } from "../types/types";
 import domUtils from "./domUtils";
 import $ from "jquery";
@@ -34,14 +35,12 @@ async function sendApiRequest(
   }
 }
 
-const BASE_API_URL = "http://localhost:3000";
-
 export async function askAI(
   prompt: string,
   route = "getOperationName",
   additionalInfo = {}
 ): Promise<any> {
-  const url = `${BASE_API_URL}/${route}`;
+  const url = `${getBaseURL()}/${route}`;
   return sendApiRequest(url, {
     method: "POST",
     body: { userPrompt: prompt, ...additionalInfo },
@@ -58,12 +57,12 @@ function performOperations(element: HTMLElement | null, opType: string): boolean
       return true;
     }
     case "scrollIntoView": {
-      $(element).css({ border: "5px solid red", "padding": "2px" });
+      $(element).css({ border: "5px solid black", "padding": "2px" });
         $(element)
           .animate({ borderWidth: "0px", border: "none" }, 1000)
-          .animate({ borderWidth: "5px", border: "5px solid red" }, 1000)
+          .animate({ borderWidth: "5px", border: "5px solid black" }, 1000)
           .animate({ borderWidth: "0px", border: "none" }, 1000)
-          .animate({ borderWidth: "5px", border: "5px solid red" }, 1000);
+          .animate({ borderWidth: "5px", border: "5px solid black" }, 1000);
       setTimeout(() => {
         $(element).css({ border: "none", "padding": "none" });
       }, 5000);
@@ -89,7 +88,7 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
 
   const parsedResponse = JSON.parse(parseGenAICodeResponse(result, "json"));
   const tasks = parsedResponse["result"] || [];
-  let operationSuccess = false;
+  let operationSuccess = true;
   let functionType = "";
   for (const { fn, input, operation } of tasks) {
     functionType = domUtils.getFunctionType(fn);
@@ -107,13 +106,17 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
         if (operation) {
           if (Array.isArray(foundElements)) {
             console.log("I am here! ", foundElements);
-            operationSuccess = foundElements?.reduce((operationSuccess: boolean, element: any) => {
-              return performOperations(element, operation) && operationSuccess;
-            }, true);
+            for (const elements of foundElements) {
+              if (!performOperations(elements, operation)) {
+                operationSuccess = false;
+              }
+            }
           } else {
             operationSuccess = performOperations(foundElements, operation);
           }
-          operationSuccess = operation.indexOf("scroll") > -1;
+          if (operation.toLowerCase() !== "scrollintoview" && operation.indexOf("scroll") > -1) {
+            operationSuccess = true;
+          }
         }
       }
     }

@@ -137,7 +137,6 @@ const initialize = async () => {
       }, 60000 * 5);
       responsePromise.then((message: any) => {
         clearTimeout(timer);
-        console.log("running the dialog box: ", message);
         AIResponseDialogBox.show(message.data);
       });
       await loader.run(responsePromise);
