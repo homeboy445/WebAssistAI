@@ -2,10 +2,14 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 
-const isProduction = false;
+
+const buildMode = process.env.BUILD_MODE === 'DEV' ? "development" : "production";
+const isProduction = buildMode === "production";
+
+console.log("building for: ", buildMode);
 
 module.exports = {
-  mode: 'development', // Change to 'production' for production build
+  mode: buildMode,
   entry: {
     popup: './src/popup.ts',
     background: './src/background.ts',

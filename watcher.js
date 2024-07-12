@@ -36,21 +36,21 @@ class FileWatcher {
         if (filename.includes("dist/")) {
             return;
         }
-        console.log(`\nFile '${filename}' has changed. Running 'npm run build:dev' command...`);
+        console.log(`\nFile '${filename}' has changed. Running '${this.commandToRun}' command...`);
         // Run the 'npm run build:dev' command programmatically
         exec(this.commandToRun, { cwd: this.folderPath }, (error, stdout, stderr) => {
           // setTimeout(() => {
             this.isCommandRunnerLocked = false;
           // }, 2000);
           if (error) {
-            console.error(`\nError running 'npm run build:dev' command: ${error.message}`);
+            console.error(`\nError running '${this.commandToRun}' command: ${error.message}`);
             return;
           }
           if (stderr) {
-            console.error(`\n'npm run build:dev' command had errors: ${stderr}`);
+            console.error(`\n'${this.commandToRun}' command had errors: ${stderr}`);
             return;
-          }  
-          console.log(`\n'npm run build:dev' command output:\n${stdout}`);
+          }
+          console.log(`\n'${this.commandToRun}' command output:\n${stdout}`);
         });
       }
     });

@@ -21,13 +21,11 @@ async function sendApiRequest(
       headers: { ...options.headers, "Content-Type": "application/json" },
       body: options.body ? JSON.stringify(options.body) : undefined,
     });
-
     if (!response.ok) {
       throw new Error(
         `API request failed with status ${response.status}: ${response.statusText}`
       );
     }
-
     return response.json();
   } catch (error) {
     console.error("Error sending API request:", error);
@@ -96,8 +94,8 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
       return { operationSuccess: false, result: "Invalid operation!" };
     }
     const foundElements = await (domUtils as any)[fn]?.(input);
-    switch (fn) {
-      case "collectSiteDataAndProcessContent": {
+    switch (functionType) {
+      case TaskType.INFO_RETRIEVAL: {
         if (foundElements.result) {
           return { ...JSON.parse(parseGenAICodeResponse(foundElements.result, "json")), operationSuccess: true, functionType: TaskType.INFO_RETRIEVAL };
         }

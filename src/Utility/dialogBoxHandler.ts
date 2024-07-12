@@ -17,6 +17,7 @@ export class DialogBoxHandler {
     const titleHolder = $(`<h1>${store.title}</h1>`);
     const contentHolder = $(`<p>${store.content}</p>`);
     const toggleButton = $(`<button>Close</button>`);
+    toggleButton.addClass("closeBtn");
     titleHolder.css({
       "font-size": "2rem",
       "margin-top": "10%",
@@ -24,10 +25,18 @@ export class DialogBoxHandler {
     });
     contentHolder.css({
       "font-size": "1.3rem",
-      margin: "2%",
-      "margin-top": "5%",
-      "margin-bottom": "5%",
+      "margin-top": "1%",
+      "margin-bottom": "1%",
       "line-height": "inherit",
+    });
+    toggleButton.css({
+      "font-size": "1rem",
+      padding: "2%",
+      cursor: "pointer",
+      background: "green",
+      color: "white",
+      border: "none",
+      "border-radius": "5px"
     });
     parent.append(titleHolder);
     parent.append(contentHolder);
@@ -35,7 +44,7 @@ export class DialogBoxHandler {
     parent.css({
       display: "flex",
       flexDirection: "column",
-      justifyContent: "space-between",
+      justifyContent: "center",
       alignItems: "center",
       position: "fixed",
       top: "0%",
@@ -60,7 +69,7 @@ export class DialogBoxHandler {
     config: DialogBoxConfig
   ) {
     const dialogBox = this.getDialogBox(data);
-    dialogBox.parent.css({ width: config.width, "height": config.height });
+    dialogBox.parent.css({ width: config.width, height: config.height });
     this.target.append(dialogBox.parent);
     dialogBox.child.toggleButton.on("click", () => {
       try {

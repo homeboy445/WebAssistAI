@@ -83,7 +83,8 @@ class DomUtils {
     scrollToBottom: TaskType.DOM_OPERATION,
     scrollToTop: TaskType.DOM_OPERATION,
     collectSiteDataAndProcessContent: TaskType.INFO_RETRIEVAL,
-    findElementOnThePageGloballyByText: TaskType.DOM_OPERATION,
+    findElementLiterallyOnThePageGloballyByText: TaskType.DOM_OPERATION,
+    answerQueriesRelatedToThePage: TaskType.INFO_RETRIEVAL,
   };
 
   getFunctionType(functionName: string): TaskType {
@@ -229,7 +230,7 @@ class DomUtils {
     return `<body>${getTextContentWithTags(document.body)}</body>`;
   }
 
-  async collectSiteDataAndProcessContent() {
+  async collectSiteDataAndProcessContent(query: string = "", type: 'summarise' | 'query' = 'summarise') {
     const socket = io(getBaseURL());
     const htmlStructureString = this.getAllTextContentWithTags();
     const pageDataList = htmlStructureString.split("\n");
@@ -238,15 +239,36 @@ class DomUtils {
     const responseCallback = (data: any) => {
       promiseResolvedCallback(data);
     };
-    socket.on("pageSummarisation.response", responseCallback);
+    const getChannelInfo = (type: 'summarise' | 'query') => {
+      let mainTask;
+      switch (type) {
+        case "summarise": {
+          mainTask = "pageSummarisation";
+          break;
+        }
+        case "query": {
+          mainTask = "pageQuery";
+          break;
+        }
+      }
+      return {
+        startConnection: `${mainTask}.send`,
+        endConnection: `${mainTask}.response`
+      };
+    }
+    const channelInfo = getChannelInfo(type);
+    socket.on(channelInfo.endConnection, responseCallback);
     for (let idx = 0; idx < pageDataList.length; idx += 500) {
       const pageStringList = pageDataList.slice(idx, idx + 500);
-      const data = {
+      const data: any = {
         pageString: pageStringList.join(" "),
         isStart: idx === 0,
         isEnd: idx + 500 > pageDataList.length,
       };
-      socket.emit("pageSummarisation.send", data);
+      if (data.isEnd && type === "query") {
+        data.query = query;
+      }
+      socket.emit(channelInfo.startConnection, data);
       finalResponse = await new Promise((resolve) => {
         const timer = setTimeout(() => {
           resolve("Not found!");
@@ -257,6 +279,7 @@ class DomUtils {
         };
       });
     }
+    socket.disconnect();
     return finalResponse;
   }
 
@@ -292,7 +315,7 @@ class DomUtils {
     return visibleElements;
   }
 
-  async findElementOnThePageGloballyByText(
+  async findElementLiterallyOnThePageGloballyByText(
     input: string
   ): Promise<HTMLElement | null> {
     const treeWalker = document.createTreeWalker(
@@ -346,6 +369,10 @@ class DomUtils {
       } catch (e) {}
     } while (iterator < textList.length);
     return null;
+  }
+
+  answerQueriesRelatedToThePage(input: string) {
+    return this.collectSiteDataAndProcessContent(input, "query");
   }
 
   createDialogBox(data: {

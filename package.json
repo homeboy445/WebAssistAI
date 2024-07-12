@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:dev": "webpack --config webpack.config.js"
+    "build:dev": "cross-env BUILD_MODE=DEV webpack --config webpack.config.js",
+    "build": "webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
