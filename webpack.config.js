@@ -50,7 +50,7 @@ module.exports = {
     }),
     new CopyWebpackPlugin({
       patterns: [
-        { from:  path.resolve(__dirname, 'assets/microphone.png'), to:  path.resolve(__dirname, 'dist') },
+        { from:  path.resolve(__dirname, 'public/assets/microphone.png'), to:  path.resolve(__dirname, 'dist') },
       ]
   })
   ],

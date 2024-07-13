@@ -6,6 +6,8 @@ import { performTaskBasedOnPrompt } from "./Utility/aiQueryHandler";
 import domUtils from "./Utility/domUtils";
 import { audioHandler } from "./Utility/audioHandler";
 
+console.log = () => {};
+
 function objectToHTML(obj: any): string {
   if (typeof obj !== "object") {
     return obj;
