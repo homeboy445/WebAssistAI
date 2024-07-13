@@ -10,7 +10,21 @@
     <div class="main-parent">
         <h2>Hi, I'm your Web Assistant! What would you like to do on the page ?</h2>
         <input type="text" placeholder="enter query/task" class="search-bar" />
-        <button class="search-submit">Go</button>
+        <div class="main-parent_child_1">
+            <button class="record-audio">🎙️</button>
+            <button class="search-submit">Go</button>
+        </div>
+    </div>
+    <div class="main-recording-section">
+        <img src="./microphone.png" alt="recording..." class="recorderImg"/>
+        <div class="main-recording-section_container">
+            <span id="record-timer">Starting...</span>
+            <div class="main-recording-section_child">
+                <button id="record-stop" class="close-dialog-btn">Stop</button>
+                <button id="record-cancel" class="close-dialog-close-btn">Cancel</button>
+            </div>
+        </div>
+    </div>
     </div>
     <div class="main-ai-response">
         <h1>AI's response</h1>
