@@ -112,7 +112,7 @@ export async function performTaskBasedOnPrompt(prompt: string): Promise<AITaskRe
           } else {
             operationSuccess = performOperations(foundElements, operation);
           }
-          if (operation.toLowerCase() !== "scrollintoview" && operation.indexOf("scroll") > -1) {
+          if (fn.indexOf("scroll") > -1) {
             operationSuccess = true;
           }
         }

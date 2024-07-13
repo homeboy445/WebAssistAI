@@ -47,7 +47,12 @@ module.exports = {
         patterns: [
           { from:  path.resolve(__dirname, 'public/manifest.json'), to:  path.resolve(__dirname, 'dist') },
         ]
-    })
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        { from:  path.resolve(__dirname, 'assets/microphone.png'), to:  path.resolve(__dirname, 'dist') },
+      ]
+  })
   ],
   devtool: isProduction ? 'source-map' : 'cheap-module-source-map'
 };

@@ -14,6 +14,8 @@ export class DialogBoxHandler {
 
   private getDialogBox(store: { title: string; content: string }) {
     const parent = $(`<div></div>`);
+    parent.css({ overflow: "scroll" });
+    const mainDiv = $(`<div></div>`);
     const titleHolder = $(`<h1>${store.title}</h1>`);
     const contentHolder = $(`<p>${store.content}</p>`);
     const toggleButton = $(`<button>Close</button>`);
@@ -38,10 +40,10 @@ export class DialogBoxHandler {
       border: "none",
       "border-radius": "5px"
     });
-    parent.append(titleHolder);
-    parent.append(contentHolder);
-    parent.append(toggleButton);
-    parent.css({
+    mainDiv.append(titleHolder);
+    mainDiv.append(contentHolder);
+    mainDiv.append(toggleButton);
+    mainDiv.css({
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
@@ -55,7 +57,7 @@ export class DialogBoxHandler {
       padding: "2%",
     });
     return {
-      parent,
+      parent: mainDiv,
       child: {
         titleHolder,
         contentHolder,

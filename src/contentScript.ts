@@ -4,6 +4,7 @@ import { Marked } from "marked";
 import { TaskType } from "./types/types";
 import { performTaskBasedOnPrompt } from "./Utility/aiQueryHandler";
 import domUtils from "./Utility/domUtils";
+import { audioHandler } from "./Utility/audioHandler";
 
 function objectToHTML(obj: any): string {
   if (typeof obj !== "object") {
@@ -29,7 +30,7 @@ const parseMarkdown = async (content: string) => {
     console.error("Error parsing markdown: ", e);
     return content;
   }
-}
+};
 
 chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
   console.log(">> received from extension: ", request);
@@ -38,16 +39,37 @@ chrome.runtime.onMessage.addListener(async (request, sender, sendResponse) => {
     try {
       result = await performTaskBasedOnPrompt(request.task);
       if (result.functionType === TaskType.INFO_RETRIEVAL) {
-        domUtils.createDialogBox({ title: "Info you requested", content: await parseMarkdown(objectToHTML(result.result) + "\nAdditionally, " + objectToHTML(result.additionalInfo)) });
+        domUtils.createDialogBox({
+          title: "Info you requested",
+          content: await parseMarkdown(
+            objectToHTML(result.result) +
+              "\nAdditionally, " +
+              objectToHTML(result.additionalInfo)
+          ),
+        });
       }
     } catch (e) {
       result = { isError: true };
     }
-    chrome.runtime.sendMessage({ type: 'WEB_TASK_RESPONSE', data: result });
+    chrome.runtime.sendMessage({ type: "WEB_TASK_RESPONSE", data: result });
+  } else if (request.type === "WEB_RECORD_AUDIO_START") {
+    console.log("received audio recording request!");
+    await audioHandler.record().catch((e) => {
+      chrome.runtime.sendMessage({
+        type: "WEB_RECORD_AUDIO_RESPONSE",
+        data: { operationSuccess: false },
+      });
+    });
+  }
+  if (request.type === "WEB_RECORD_AUDIO_STOP") {
+    console.log("received audio recording stop request!");
+    const transcribedData = await audioHandler.awaitCompletionAndTranscribe();
+    chrome.runtime.sendMessage({
+      type: "WEB_RECORD_AUDIO_RESPONSE",
+      data: { operationSuccess: transcribedData !== "error", transcribedData },
+    });
   } else {
-    sendResponse('hello from content-script');
+    sendResponse("hello from content-script");
   }
   return true;
 });
-
-(window as any).domUtils = domUtils;
