@@ -24,7 +24,7 @@ archive.on('error', err => {
 archive.pipe(output);
 
 // Append files from a directory
-archive.directory('../dist/', false);
+archive.directory('dist/', false);
 
 // Append individual files
 // archive.file('file1.txt', { name: 'file1.txt' });
