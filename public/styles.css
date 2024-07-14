@@ -8,9 +8,12 @@
     font-size: 1rem;
     overflow-x: scroll;
 }
+.main-parent > h2 {
+  text-align: center;
+}
 .search-bar {
     font-size: 1.5rem;
-    width: 99%;
+    width: 95%;
     align-self: flex-end;
 }
 .main-parent_child_1 {
